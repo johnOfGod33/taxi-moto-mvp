@@ -17,7 +17,6 @@ Application web responsive de réservation de taxi-moto, accessible depuis n'imp
 5. Consulte le prix estimé et le temps d'arrivée
 6. Confirme la course
 7. Reçoit le profil du conducteur assigné
-8. Suit le conducteur en temps réel sur la carte
 
 ### 2.2 Flux Conducteur
 
@@ -34,7 +33,7 @@ Application web responsive de réservation de taxi-moto, accessible depuis n'imp
 |---|---|
 | Page d'accueil | Choix du rôle (Client ou Conducteur) |
 | Formulaire | Collecte des informations selon le rôle choisi |
-| Page principale Client | Carte interactive pour saisir la destination et suivre le conducteur en temps réel |
+| Page principale Client | Carte interactive pour saisir la destination |
 | Modal de confirmation | Affiché par-dessus la carte avec le prix estimé et le conducteur assigné, avant confirmation de la course |
 | Tableau de bord Conducteur | Gestion du statut (disponible/indisponible) et des demandes de course reçues |
 
@@ -44,7 +43,6 @@ Application web responsive de réservation de taxi-moto, accessible depuis n'imp
 - **Carte interactive** avec géolocalisation
 - **Matching client-conducteur** par proximité
 - **Estimation du prix** selon la distance
-- **Suivi de course en temps réel**
 - **Paiement** : cash, Flooz ou T-Money à la fin de la course
 
 ## 5. Données collectées
@@ -66,3 +64,4 @@ Application web responsive de réservation de taxi-moto, accessible depuis n'imp
 - Historique des courses
 - Paiement en ligne intégré (carte bancaire)
 - Notation/avis des conducteurs et clients
+- Suivi de course en temps réel
