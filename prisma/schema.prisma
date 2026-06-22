@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RideStatus {
+  pending
+  accepted
+  declined
+  completed
+}
+
+enum PaymentMethod {
+  cash
+  flooz
+  tmoney
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  createdAt DateTime @default(now())
+
+  rides Ride[]
+}
+
+model Driver {
+  id            String   @id @default(cuid())
+  name          String
+  phone         String
+  licensePlate  String
+  available     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  rides Ride[]
+}
+
+model Ride {
+  id              String         @id @default(cuid())
+  customerId      String
+  customer        Customer       @relation(fields: [customerId], references: [id])
+  driverId        String?
+  driver          Driver?        @relation(fields: [driverId], references: [id])
+  destination     String
+  estimatedPrice  Float
+  status          RideStatus     @default(pending)
+  paymentMethod   PaymentMethod?
+  createdAt       DateTime       @default(now())
+}

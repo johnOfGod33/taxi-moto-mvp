@@ -20,17 +20,19 @@ Raisons :
 
 ## 4. Schéma de données (proposition)
 
+> Le code et le schéma de base de données sont en anglais (convention de l'équipe), seuls les documents sont en français.
+
 ```
-Client
-  id, nom, telephone, createdAt
+Customer
+  id, name, phone, createdAt
 
-Conducteur
-  id, nom, telephone, plaque, disponible, createdAt
+Driver
+  id, name, phone, licensePlate, available, createdAt
 
-Course
-  id, clientId, conducteurId, destination,
-  prixEstime, statut (en_attente | acceptee | refusee | terminee),
-  modePaiement (cash | flooz | tmoney), createdAt
+Ride
+  id, customerId, driverId, destination,
+  estimatedPrice, status (pending | accepted | declined | completed),
+  paymentMethod (cash | flooz | tmoney), createdAt
 ```
 
 ## 5. Carte et géolocalisation
