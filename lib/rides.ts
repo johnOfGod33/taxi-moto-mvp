@@ -1,45 +1,44 @@
 import { prisma } from "@/lib/prisma";
-import { haversineDistanceKm, type Coordinates } from "@/lib/geo";
+import { haversineDistanceKm, MATCH_RADIUS_KM, type Coordinates } from "@/lib/geo";
 import type { PaymentMethod } from "@/generated/prisma/enums";
 
-export async function findNearestAvailableDriver(origin: Coordinates) {
+// A ride is broadcast to every available driver within MATCH_RADIUS_KM rather
+// than pre-assigned to the nearest one, so the first driver to accept gets it.
+export async function hasAvailableDriverNearby(origin: Coordinates) {
   const availableDrivers = await prisma.driver.findMany({
     where: { available: true },
   });
 
-  if (availableDrivers.length === 0) return null;
+  if (availableDrivers.length === 0) return false;
 
   const withLocation = availableDrivers.filter(
     (driver) => driver.lat !== null && driver.lng !== null,
   );
 
   // Drivers without a reported position yet (never toggled "disponible" with
-  // geolocation granted) fall back to first-available instead of failing the match.
-  if (withLocation.length === 0) return availableDrivers[0];
+  // geolocation granted) fall back to always-eligible instead of failing the match.
+  if (withLocation.length === 0) return true;
 
-  return withLocation.reduce((nearest, driver) => {
-    const driverDistance = haversineDistanceKm(origin, {
-      lat: driver.lat as number,
-      lng: driver.lng as number,
-    });
-    const nearestDistance = haversineDistanceKm(origin, {
-      lat: nearest.lat as number,
-      lng: nearest.lng as number,
-    });
-    return driverDistance < nearestDistance ? driver : nearest;
-  });
+  return withLocation.some(
+    (driver) =>
+      haversineDistanceKm(origin, {
+        lat: driver.lat as number,
+        lng: driver.lng as number,
+      }) <= MATCH_RADIUS_KM,
+  );
 }
 
 export async function createRide(input: {
   customerId: string;
-  driverId: string | null;
+  origin: Coordinates;
   destination: string;
   estimatedPrice: number;
 }) {
   return prisma.ride.create({
     data: {
       customerId: input.customerId,
-      driverId: input.driverId,
+      originLat: input.origin.lat,
+      originLng: input.origin.lng,
       destination: input.destination,
       estimatedPrice: input.estimatedPrice,
     },
@@ -74,19 +73,35 @@ export async function applyDriverRideAction(
   driverId: string,
   action: DriverRideAction,
 ) {
-  const ride = await prisma.ride.findUnique({ where: { id: rideId } });
-  if (!ride || ride.driverId !== driverId) return null;
+  if (action.type === "accept") {
+    // Atomic claim: only succeeds if the ride is still unassigned and pending,
+    // so the first driver to accept wins even if several requested it at once.
+    const claimed = await prisma.ride.updateMany({
+      where: { id: rideId, status: "pending", driverId: null },
+      data: { driverId, status: "accepted" },
+    });
+    if (claimed.count === 0) {
+      const ride = await prisma.ride.findUnique({ where: { id: rideId } });
+      if (!ride) return null;
+      throw new RideActionError("Cette course a déjà été prise par un autre conducteur.");
+    }
+    return prisma.ride.findUnique({ where: { id: rideId }, include: { driver: true } });
+  }
 
-  if (action.type === "accept" || action.type === "decline") {
+  if (action.type === "decline") {
+    const ride = await prisma.ride.findUnique({ where: { id: rideId } });
+    if (!ride) return null;
     if (ride.status !== "pending") {
       throw new RideActionError("La course n'est plus en attente.");
     }
     return prisma.ride.update({
       where: { id: rideId },
-      data: { status: action.type === "accept" ? "accepted" : "declined" },
+      data: { declinedDriverIds: { push: driverId } },
     });
   }
 
+  const ride = await prisma.ride.findUnique({ where: { id: rideId } });
+  if (!ride || ride.driverId !== driverId) return null;
   if (ride.status !== "accepted") {
     throw new RideActionError("La course doit être acceptée avant d'être terminée.");
   }

@@ -31,27 +31,30 @@ model Customer {
 }
 
 model Driver {
-  id            String   @id @default(cuid())
-  name          String
-  phone         String   @unique
-  licensePlate  String
-  available     Boolean  @default(false)
-  lat           Float?
-  lng           Float?
-  createdAt     DateTime @default(now())
+  id           String   @id @default(cuid())
+  name         String
+  phone        String   @unique
+  licensePlate String
+  available    Boolean  @default(false)
+  lat          Float?
+  lng          Float?
+  createdAt    DateTime @default(now())
 
   rides Ride[]
 }
 
 model Ride {
-  id              String         @id @default(cuid())
-  customerId      String
-  customer        Customer       @relation(fields: [customerId], references: [id])
-  driverId        String?
-  driver          Driver?        @relation(fields: [driverId], references: [id])
-  destination     String
-  estimatedPrice  Float
-  status          RideStatus     @default(pending)
-  paymentMethod   PaymentMethod?
-  createdAt       DateTime       @default(now())
+  id                String         @id @default(cuid())
+  customerId        String
+  customer          Customer       @relation(fields: [customerId], references: [id])
+  driverId          String?
+  driver            Driver?        @relation(fields: [driverId], references: [id])
+  originLat         Float?
+  originLng         Float?
+  destination       String
+  estimatedPrice    Float
+  status            RideStatus     @default(pending)
+  paymentMethod     PaymentMethod?
+  declinedDriverIds String[]       @default([])
+  createdAt         DateTime       @default(now())
 }

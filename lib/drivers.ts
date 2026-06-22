@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { normalizeTogoPhone } from "@/lib/customers";
+import { haversineDistanceKm, MATCH_RADIUS_KM } from "@/lib/geo";
 
 export const driverSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères."),
@@ -48,9 +49,40 @@ export async function setDriverAvailability(
 }
 
 export async function getDriverRides(driverId: string) {
-  return prisma.ride.findMany({
-    where: { driverId, status: { in: ["pending", "accepted"] } },
-    include: { customer: true },
-    orderBy: { createdAt: "asc" },
-  });
+  const driver = await prisma.driver.findUnique({ where: { id: driverId } });
+  if (!driver) return [];
+
+  const [ownAcceptedRides, pendingRides] = await Promise.all([
+    prisma.ride.findMany({
+      where: { driverId, status: "accepted" },
+      include: { customer: true },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.ride.findMany({
+      where: {
+        status: "pending",
+        driverId: null,
+        NOT: { declinedDriverIds: { has: driverId } },
+      },
+      include: { customer: true },
+      orderBy: { createdAt: "asc" },
+    }),
+  ]);
+
+  // Broadcast pending requests, filtered to this driver's vicinity — unless
+  // the driver hasn't reported a location yet, in which case show all of them.
+  const nearbyPendingRides =
+    driver.lat === null || driver.lng === null
+      ? pendingRides
+      : pendingRides.filter((ride) => {
+          if (ride.originLat === null || ride.originLng === null) return true;
+          return (
+            haversineDistanceKm(
+              { lat: driver.lat as number, lng: driver.lng as number },
+              { lat: ride.originLat, lng: ride.originLng },
+            ) <= MATCH_RADIUS_KM
+          );
+        });
+
+  return [...nearbyPendingRides, ...ownAcceptedRides];
 }

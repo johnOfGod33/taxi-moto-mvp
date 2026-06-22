@@ -10,6 +10,9 @@ export const BASE_FARE_FCFA = 200;
 export const RATE_PER_KM_FCFA = 150;
 export const AVERAGE_SPEED_KMH = 25;
 
+// Radius within which a pending ride request is broadcast to available drivers.
+export const MATCH_RADIUS_KM = 5;
+
 function toRadians(degrees: number): number {
   return (degrees * Math.PI) / 180;
 }

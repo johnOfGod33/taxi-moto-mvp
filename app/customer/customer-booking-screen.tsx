@@ -22,9 +22,7 @@ const POLL_INTERVAL_MS = 3000;
 
 export function CustomerBookingScreen() {
   const [origin, setOrigin] = useState<Coordinates>(DEFAULT_CENTER);
-  const [usingFallbackCenter, setUsingFallbackCenter] = useState(
-    () => typeof navigator === "undefined" || !("geolocation" in navigator),
-  );
+  const [usingFallbackCenter, setUsingFallbackCenter] = useState(false);
   const [destination, setDestination] = useState<Coordinates | null>(null);
   const [destinationLabel, setDestinationLabel] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<RideEstimate | null>(null);
@@ -32,7 +30,10 @@ export function CustomerBookingScreen() {
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      const timeout = setTimeout(() => setUsingFallbackCenter(true));
+      return () => clearTimeout(timeout);
+    }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -60,14 +61,22 @@ export function CustomerBookingScreen() {
   const activeRideStatus = activeRide?.status;
 
   useEffect(() => {
-    if (!activeRideId || activeRideStatus !== "pending") return;
+    if (!activeRideId) return;
+    if (activeRideStatus !== "pending" && activeRideStatus !== "accepted") return;
 
     const interval = setInterval(async () => {
       const response = await fetch(`/api/rides/${activeRideId}`);
       if (!response.ok) return;
       const data = await response.json();
+      if (data.status === "completed" || data.status === "cancelled") {
+        setActiveRide(null);
+        setDestination(null);
+        setDestinationLabel(null);
+        setEstimate(null);
+        return;
+      }
       setActiveRide((current) =>
-        current ? { ...current, status: data.status } : current,
+        current ? { ...current, status: data.status, driver: data.driver } : current,
       );
     }, POLL_INTERVAL_MS);
 
@@ -111,7 +120,18 @@ export function CustomerBookingScreen() {
       }),
     });
 
-    if (response.status === 409) return { ok: false, reason: "no-driver" };
+    if (response.status === 409) {
+      const data = await response.json().catch(() => null);
+      if (data?.code === "active-ride-exists") {
+        const activeResponse = await fetch("/api/rides/active");
+        const active = activeResponse.ok ? await activeResponse.json() : null;
+        if (active) {
+          setActiveRide(active);
+          return { ok: true };
+        }
+      }
+      return { ok: false, reason: "no-driver" };
+    }
     if (!response.ok) return { ok: false, reason: "error" };
 
     const data = await response.json();
