@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-22T00:00:00.000Z",
+  "title": "Design System: Taxi-Moto MVP",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Sun Dispatch Yellow",
+        "canonical": "oklch(0.80 0.17 95)",
+        "tonalRamp": [
+          "oklch(0.20 0.04 95)",
+          "oklch(0.32 0.07 95)",
+          "oklch(0.45 0.10 95)",
+          "oklch(0.58 0.13 95)",
+          "oklch(0.68 0.15 95)",
+          "oklch(0.80 0.17 95)",
+          "oklch(0.88 0.13 95)",
+          "oklch(0.95 0.06 95)"
+        ]
+      },
+      "accent": {
+        "role": "secondary",
+        "displayName": "Dispatch Green",
+        "canonical": "oklch(0.45 0.13 150)",
+        "tonalRamp": [
+          "oklch(0.15 0.03 150)",
+          "oklch(0.25 0.06 150)",
+          "oklch(0.35 0.10 150)",
+          "oklch(0.45 0.13 150)",
+          "oklch(0.58 0.12 150)",
+          "oklch(0.70 0.10 150)",
+          "oklch(0.85 0.06 150)",
+          "oklch(0.95 0.03 150)"
+        ]
+      },
+      "destructive": {
+        "role": "destructive",
+        "displayName": "Refuse Red",
+        "canonical": "oklch(0.55 0.22 25)",
+        "tonalRamp": [
+          "oklch(0.18 0.05 25)",
+          "oklch(0.28 0.10 25)",
+          "oklch(0.38 0.15 25)",
+          "oklch(0.48 0.19 25)",
+          "oklch(0.55 0.22 25)",
+          "oklch(0.68 0.16 25)",
+          "oklch(0.82 0.09 25)",
+          "oklch(0.93 0.04 25)"
+        ]
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Pure Ground",
+        "canonical": "oklch(1.00 0.00 0)",
+        "tonalRamp": [
+          "oklch(0.10 0 0)",
+          "oklch(0.25 0 0)",
+          "oklch(0.40 0 0)",
+          "oklch(0.55 0 0)",
+          "oklch(0.70 0 0)",
+          "oklch(0.85 0 0)",
+          "oklch(0.95 0 0)",
+          "oklch(1.00 0 0)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Quiet Surface",
+        "canonical": "oklch(0.965 0.008 95)"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Near-Black Ink",
+        "canonical": "oklch(0.17 0.01 90)"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "canonical": "oklch(0.55 0.01 90)"
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "canonical": "oklch(0.90 0.005 95)"
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Screen titles, price/ETA callouts." },
+      "title": { "displayName": "Title", "purpose": "Card and section titles." },
+      "body": { "displayName": "Body", "purpose": "Form labels, addresses, copy." },
+      "label": { "displayName": "Label", "purpose": "Button text, status pills, field hints." }
+    },
+    "shadows": [
+      { "name": "modal-lift", "value": "0 8px 24px oklch(0.17 0.01 90 / 0.16)", "purpose": "Floating modal/sheet separation from the map behind it." }
+    ],
+    "motion": [
+      { "name": "ease-responsive", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default ease-out for button press, toggle, status-change feedback." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action on a screen (Confirmer la course, Accepter).",
+      "html": "<button class=\"ds-btn-primary\">Confirmer la course</button>",
+      "css": ".ds-btn-primary { background: oklch(0.80 0.17 95); color: oklch(0.17 0.01 90); padding: 14px 24px; border-radius: 999px; border: none; font-weight: 600; font-size: 1rem; transition: background 0.15s cubic-bezier(0.16,1,0.3,1); } .ds-btn-primary:hover { background: oklch(0.76 0.18 95); } .ds-btn-primary:focus-visible { outline: 2px solid oklch(0.17 0.01 90); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Cancel/back actions, never the main CTA.",
+      "html": "<button class=\"ds-btn-secondary\">Annuler</button>",
+      "css": ".ds-btn-secondary { background: oklch(0.965 0.008 95); color: oklch(0.17 0.01 90); padding: 14px 24px; border-radius: 999px; border: none; font-weight: 600; font-size: 1rem; transition: background 0.15s cubic-bezier(0.16,1,0.3,1); } .ds-btn-secondary:hover { background: oklch(0.93 0.01 95); } .ds-btn-secondary:focus-visible { outline: 2px solid oklch(0.17 0.01 90); outline-offset: 2px; }"
+    },
+    {
+      "name": "Status Pill — Available",
+      "kind": "chip",
+      "refersTo": "status-pill-available",
+      "description": "Driver 'disponible' / ride 'acceptée' status signal.",
+      "html": "<span class=\"ds-pill-available\">Disponible</span>",
+      "css": ".ds-pill-available { display: inline-flex; align-items: center; background: oklch(0.45 0.13 150); color: oklch(1 0 0); padding: 4px 12px; border-radius: 999px; font-weight: 500; font-size: 0.8125rem; }"
+    },
+    {
+      "name": "Status Pill — Inactive",
+      "kind": "chip",
+      "refersTo": "status-pill-inactive",
+      "description": "Driver 'indisponible' / ride 'refusée' resulting state label (not the refuse action itself).",
+      "html": "<span class=\"ds-pill-inactive\">Indisponible</span>",
+      "css": ".ds-pill-inactive { display: inline-flex; align-items: center; background: oklch(0.965 0.008 95); color: oklch(0.55 0.01 90); padding: 4px 12px; border-radius: 999px; font-weight: 500; font-size: 0.8125rem; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Text fields for name, phone, destination, plate.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Numéro de téléphone\" />",
+      "css": ".ds-input { background: oklch(0.965 0.008 95); color: oklch(0.17 0.01 90); border: none; border-radius: 12px; padding: 14px 16px; font-size: 1rem; width: 100%; transition: outline 0.1s; } .ds-input::placeholder { color: oklch(0.40 0.01 90); } .ds-input:focus-visible { outline: 2px solid oklch(0.17 0.01 90); outline-offset: 0; }"
+    },
+    {
+      "name": "Ride Request Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Driver dashboard: one incoming ride request.",
+      "html": "<div class=\"ds-card\"><strong>Marie A.</strong><span>Destination : Adidogomé</span></div>",
+      "css": ".ds-card { background: oklch(1 0 0); border: 1px solid oklch(0.90 0.005 95); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 4px; } .ds-card strong { color: oklch(0.17 0.01 90); font-weight: 600; } .ds-card span { color: oklch(0.55 0.01 90); font-size: 0.875rem; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Local Dispatch",
+    "overview": "This is a dispatch tool, not a storefront: someone needs a ride in the next sixty seconds, on a phone, on the move. The system borrows Gozem's confident sun-yellow — a color that already means \"taxi-moto\" in this market — and disciplines it with Uber Eats' restraint: pure white ground, generous breathing room, one color doing real work instead of five colors doing none. Nothing here is decorative; every choice optimizes for \"book a ride fast, on a possibly slow connection.\"\n\nThis system explicitly rejects the generic SaaS cream/beige look and fintech-dashboard density. There is no warm-tinted near-white background, no card-on-card nesting, no dashboard full of secondary metrics. Two roles, two short flows: book a ride, accept a ride.",
+    "keyCharacteristics": [
+      "Pure white ground, sun-yellow primary carrying real visual weight (not a thin 10% accent)",
+      "Near-black ink, no soft gray-on-white body text",
+      "Pill-shaped, high-confidence touch targets sized for one-handed, in-motion use",
+      "Flat by default — no shadows standing in for hierarchy",
+      "One animation register: responsive feedback, never choreography"
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Yellow means \"primary action.\" Green means \"available / accepted.\" Red means \"refuse.\" No screen uses a fourth color for anything that isn't one of these three signals plus near-black ink on white.", "section": "colors" },
+      { "name": "The No-Eyebrow Rule", "body": "Labels are for controls and status, not decorative section kickers. No small-caps tracked text floating above a heading \"for polish.\"", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Cards, buttons, and inputs at rest never carry a shadow. Shadow appears exactly once in the system — under a floating modal — never paired with a border.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the page background Pure Ground (oklch(1 0 0)) on every screen — the yellow only works against true white.",
+      "Do use Near-Black Ink for any text that must be read at a glance (price, ETA, plate number).",
+      "Do size every tappable target at minimum 44px, pill-shaped, with generous horizontal padding for one-handed mobile use.",
+      "Do respect prefers-reduced-motion: all \"responsive\" transitions collapse to an instant state change."
+    ],
+    "donts": [
+      "Don't use a warm cream/beige/sand background — that is the generic SaaS-default look this project explicitly rejects.",
+      "Don't build fintech-dashboard density: no secondary metrics, no multi-column data tables, no settings sprawl.",
+      "Don't pair a 1px border with a soft wide drop shadow on the same element (\"ghost card\"). Pick border or shadow, never both as decoration.",
+      "Don't use border-radius above 16px on cards/sections/inputs — pills (999px) are reserved for buttons, chips, and status labels.",
+      "Don't add a gradient, glassmorphism panel, or illustrated mascot anywhere.",
+      "Don't use Refuse Red for anything other than the \"Refuser\" action and its resulting error states."
+    ]
+  }
+}

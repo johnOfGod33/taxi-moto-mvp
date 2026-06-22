@@ -12,9 +12,9 @@
 
 ## 2. Page d'accueil (`/`)
 
-- [ ] Choix du rôle : deux boutons/cartes "Client" / "Conducteur"
-- [ ] Redirection vers le formulaire correspondant (`/customer/form` ou `/driver/form`)
-- [ ] Si cookie déjà rempli pour ce rôle → passer directement à la page principale du rôle
+- [x] Choix du rôle : deux boutons "Client" / "Conducteur" (`app/page.tsx`)
+- [x] Redirection vers le formulaire correspondant (`/customer/form` ou `/driver/form`)
+- [x] Si cookie déjà rempli pour ce rôle → passer directement à la page principale du rôle (`lib/session.ts` + `redirect()`)
 
 ## 3. Formulaire Client (`/customer/form`)
 
