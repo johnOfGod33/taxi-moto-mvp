@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOutIcon, MapPinIcon } from "lucide-react";
+import { LocateFixedIcon, LogOutIcon, MapPinIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { ActiveRidePanel, type ActiveRide } from "./active-ride-panel";
@@ -15,6 +15,7 @@ import {
   type RideEstimate,
 } from "@/lib/geo";
 import { switchProfile } from "@/app/switch-profile";
+import { cn } from "@/lib/utils";
 
 const BookingMap = dynamic(() => import("./booking-map"), {
   ssr: false,
@@ -34,31 +35,49 @@ export function CustomerBookingScreen() {
   const [isEstimating, setIsEstimating] = useState(false);
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
   const [completedRide, setCompletedRide] = useState<CompletedRide | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
 
-  useEffect(() => {
+  function locateCustomer(onLabel: (label: string | null) => void) {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      const timeout = setTimeout(() => {
-        setUsingFallbackCenter(true);
-        setOriginLabel("Lomé (position approximative)");
-      });
-      return () => clearTimeout(timeout);
+      setUsingFallbackCenter(true);
+      onLabel("Lomé (position approximative)");
+      return;
     }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const point = { lat: position.coords.latitude, lng: position.coords.longitude };
+        setUsingFallbackCenter(false);
         setOrigin(point);
         reverseGeocode(point).then((label) => {
-          setOriginLabel((current) => (current === null ? label ?? "Position actuelle" : current));
+          onLabel(label ?? "Position actuelle");
         });
       },
       () => {
         setUsingFallbackCenter(true);
-        setOriginLabel("Lomé (position approximative)");
+        onLabel("Lomé (position approximative)");
       },
       { enableHighAccuracy: true, timeout: 8000 },
     );
+  }
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      locateCustomer((label) => {
+        setOriginLabel((current) => (current === null ? label : current));
+      });
+    });
+    return () => clearTimeout(timeout);
   }, []);
+
+  function handleRecenter() {
+    setIsEditingOrigin(false);
+    setIsLocating(true);
+    locateCustomer((label) => {
+      setOriginLabel(label);
+      setIsLocating(false);
+    });
+  }
 
   useEffect(() => {
     fetch("/api/rides/active")
@@ -208,15 +227,31 @@ export function CustomerBookingScreen() {
         onSelectDestination={handleSelectDestination}
       />
 
-      <button
-        type="button"
-        onClick={() => switchProfile()}
-        aria-label="Changer de profil"
-        className="absolute right-4 z-10 flex size-11 items-center justify-center rounded-full bg-popover text-foreground shadow-[0_8px_24px_oklch(0.17_0.01_90_/_0.16)] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background sm:size-10"
+      <div
+        className="absolute right-4 z-20 flex flex-col gap-2"
         style={{ top: "max(1rem, calc(env(safe-area-inset-top) + 0.5rem))" }}
       >
-        <LogOutIcon aria-hidden="true" className="size-4.5 sm:size-4" />
-      </button>
+        <button
+          type="button"
+          onClick={() => switchProfile()}
+          aria-label="Changer de profil"
+          className="flex size-11 items-center justify-center rounded-full bg-popover text-foreground shadow-[0_8px_24px_oklch(0.17_0.01_90_/_0.16)] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background sm:size-10"
+        >
+          <LogOutIcon aria-hidden="true" className="size-4.5 sm:size-4" />
+        </button>
+        <button
+          type="button"
+          onClick={handleRecenter}
+          disabled={isLocating}
+          aria-label="Recentrer sur ma position"
+          className="flex size-11 items-center justify-center rounded-full bg-popover text-foreground shadow-[0_8px_24px_oklch(0.17_0.01_90_/_0.16)] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-64 sm:size-10"
+        >
+          <LocateFixedIcon
+            aria-hidden="true"
+            className={cn("size-4.5 sm:size-4", isLocating && "animate-pulse")}
+          />
+        </button>
+      </div>
 
       <div
         className="absolute inset-x-0 z-10 flex flex-col items-center gap-2 pl-4 pr-16"
