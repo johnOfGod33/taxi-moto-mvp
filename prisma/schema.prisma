@@ -11,6 +11,7 @@ enum RideStatus {
   pending
   accepted
   declined
+  cancelled
   completed
 }
 

@@ -54,17 +54,25 @@ export async function getRideById(id: string) {
   });
 }
 
-export type RideAction =
+export async function getActiveRideForCustomer(customerId: string) {
+  return prisma.ride.findFirst({
+    where: { customerId, status: { in: ["pending", "accepted"] } },
+    include: { driver: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export type DriverRideAction =
   | { type: "accept" }
   | { type: "decline" }
   | { type: "complete"; paymentMethod: PaymentMethod };
 
 export class RideActionError extends Error {}
 
-export async function applyRideAction(
+export async function applyDriverRideAction(
   rideId: string,
   driverId: string,
-  action: RideAction,
+  action: DriverRideAction,
 ) {
   const ride = await prisma.ride.findUnique({ where: { id: rideId } });
   if (!ride || ride.driverId !== driverId) return null;
@@ -85,5 +93,19 @@ export async function applyRideAction(
   return prisma.ride.update({
     where: { id: rideId },
     data: { status: "completed", paymentMethod: action.paymentMethod },
+  });
+}
+
+export async function cancelRideAsCustomer(rideId: string, customerId: string) {
+  const ride = await prisma.ride.findUnique({ where: { id: rideId } });
+  if (!ride || ride.customerId !== customerId) return null;
+
+  if (ride.status !== "pending" && ride.status !== "accepted") {
+    throw new RideActionError("Cette course ne peut plus être annulée.");
+  }
+
+  return prisma.ride.update({
+    where: { id: rideId },
+    data: { status: "cancelled" },
   });
 }

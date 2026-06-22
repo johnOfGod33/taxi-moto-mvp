@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,100 +13,43 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import type { Coordinates, RideEstimate } from "@/lib/geo";
+import type { RideEstimate } from "@/lib/geo";
 
-type DriverInfo = { name: string; licensePlate: string };
-type RideStatus = "pending" | "accepted" | "declined" | "completed";
+export type ConfirmResult = { ok: true } | { ok: false; reason: "no-driver" | "error" };
 
-type SearchState =
-  | { phase: "idle" }
-  | { phase: "searching" }
-  | { phase: "matched"; rideId: string; status: RideStatus; driver: DriverInfo }
-  | { phase: "no-driver" }
-  | { phase: "error" };
-
-const POLL_INTERVAL_MS = 3000;
+type Phase = "idle" | "searching" | "no-driver" | "error";
 
 export function ConfirmRideDialog({
-  origin,
-  destination,
   destinationLabel,
   estimate,
+  onConfirm,
 }: {
-  origin: Coordinates;
-  destination: Coordinates;
   destinationLabel: string | null;
   estimate: RideEstimate;
+  onConfirm: () => Promise<ConfirmResult>;
 }) {
-  const [state, setState] = useState<SearchState>({ phase: "idle" });
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, []);
-
-  function stopPolling() {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }
-
-  function pollRide(rideId: string) {
-    stopPolling();
-    pollRef.current = setInterval(async () => {
-      const response = await fetch(`/api/rides/${rideId}`);
-      if (!response.ok) return;
-
-      const data = await response.json();
-      setState((current) => {
-        if (current.phase !== "matched") return current;
-        return { ...current, status: data.status };
-      });
-
-      if (data.status !== "pending") stopPolling();
-    }, POLL_INTERVAL_MS);
-  }
+  const [open, setOpen] = useState(false);
+  const [phase, setPhase] = useState<Phase>("idle");
 
   async function handleSearchDriver() {
-    setState({ phase: "searching" });
-
-    const response = await fetch("/api/rides", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        origin,
-        destination: destinationLabel ?? `${destination.lat},${destination.lng}`,
-        estimatedPrice: estimate.estimatedPrice,
-      }),
-    });
-
-    if (response.status === 409) {
-      setState({ phase: "no-driver" });
+    setPhase("searching");
+    const result = await onConfirm();
+    if (result.ok) {
+      setOpen(false);
+      setPhase("idle");
       return;
     }
-
-    if (!response.ok) {
-      setState({ phase: "error" });
-      return;
-    }
-
-    const data = await response.json();
-    setState({ phase: "matched", rideId: data.id, status: data.status, driver: data.driver });
-    pollRide(data.id);
-  }
-
-  function handleOpenChange(open: boolean) {
-    if (!open) {
-      stopPolling();
-      setState({ phase: "idle" });
-    }
+    setPhase(result.reason);
   }
 
   return (
-    <Dialog onOpenChange={handleOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setPhase("idle");
+      }}
+    >
       <DialogTrigger render={<Button size="lg" className="w-full" />}>
         Confirmer la course
       </DialogTrigger>
@@ -129,64 +72,23 @@ export function ConfirmRideDialog({
             <span className="text-sm text-muted-foreground">~{estimate.etaMinutes} min</span>
           </div>
 
-          {state.phase === "idle" && (
-            <p className="text-sm text-muted-foreground">
-              On recherche le conducteur disponible le plus proche.
-            </p>
-          )}
-
-          {state.phase === "searching" && (
+          {phase === "searching" && (
             <p className="text-sm text-muted-foreground">Recherche d&apos;un conducteur…</p>
           )}
-
-          {state.phase === "no-driver" && (
+          {phase === "no-driver" && (
             <p className="text-sm text-destructive">
               Aucun conducteur disponible pour le moment. Réessayez dans un instant.
             </p>
           )}
-
-          {state.phase === "error" && (
-            <p className="text-sm text-destructive">
-              Une erreur est survenue. Réessayez.
-            </p>
-          )}
-
-          {state.phase === "matched" && (
-            <div className="flex flex-col gap-2 rounded-lg bg-secondary p-4">
-              <span className="text-base font-medium text-foreground">
-                {state.driver.name}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {state.driver.licensePlate}
-              </span>
-              {state.status === "pending" && (
-                <span className="text-sm text-muted-foreground">
-                  En attente de confirmation du conducteur…
-                </span>
-              )}
-              {state.status === "accepted" && (
-                <span className="text-sm font-medium text-foreground">
-                  Course acceptée — le conducteur arrive.
-                </span>
-              )}
-              {state.status === "declined" && (
-                <span className="text-sm text-destructive">
-                  Le conducteur a refusé la course.
-                </span>
-              )}
-            </div>
+          {phase === "error" && (
+            <p className="text-sm text-destructive">Une erreur est survenue. Réessayez.</p>
           )}
         </DialogPanel>
         <DialogFooter>
-          <DialogClose render={<Button variant="ghost" />}>
-            {state.phase === "matched" && state.status === "accepted" ? "Fermer" : "Annuler"}
-          </DialogClose>
-          {(state.phase === "idle" ||
-            state.phase === "no-driver" ||
-            state.phase === "error" ||
-            (state.phase === "matched" && state.status === "declined")) && (
-            <Button onClick={handleSearchDriver}>Rechercher un conducteur</Button>
-          )}
+          <DialogClose render={<Button variant="ghost" />}>Annuler</DialogClose>
+          <Button onClick={handleSearchDriver} loading={phase === "searching"}>
+            Rechercher un conducteur
+          </Button>
         </DialogFooter>
       </DialogPopup>
     </Dialog>

@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Radio, RadioGroup } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 
-type RideStatus = "pending" | "accepted" | "declined" | "completed";
+type RideStatus = "pending" | "accepted" | "declined" | "cancelled" | "completed";
 type PaymentMethod = "cash" | "flooz" | "tmoney";
 
 type DriverRide = {
