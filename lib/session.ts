@@ -32,3 +32,14 @@ export async function getSession(): Promise<Session | null> {
     return null;
   }
 }
+
+export async function setSession(session: Session): Promise<void> {
+  const store = await cookies();
+  store.set(SESSION_COOKIE, JSON.stringify(session), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+}

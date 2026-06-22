@@ -18,19 +18,19 @@
 
 ## 3. Formulaire Client (`/customer/form`)
 
-- [ ] Champs : nom, numéro de téléphone
-- [ ] Validation (nom non vide, téléphone format valide)
-- [ ] `POST /api/customers` — créer/mettre à jour le `Customer` en base
-- [ ] Sauvegarde dans un cookie (name, phone) à la soumission
-- [ ] Redirection vers la page principale Client (`/customer`)
+- [x] Champs : nom, numéro de téléphone (`app/customer/form/customer-form.tsx`)
+- [x] Validation (nom ≥2 caractères, téléphone togolais — `lib/customers.ts`, Zod)
+- [x] `POST /api/customers` — créer/mettre à jour le `Customer` en base (upsert par téléphone)
+- [x] Sauvegarde dans un cookie (name, phone) à la soumission (`lib/session.ts`)
+- [x] Redirection vers la page principale Client (`/customer` — stub en attendant la tâche 5)
 
 ## 4. Formulaire Conducteur (`/driver/form`)
 
-- [ ] Champs : nom, numéro de téléphone, plaque du véhicule
-- [ ] Validation (mêmes règles + format plaque)
-- [ ] `POST /api/drivers` — créer/mettre à jour le `Driver` en base
-- [ ] Sauvegarde dans un cookie (name, phone, licensePlate)
-- [ ] Redirection vers le tableau de bord Conducteur (`/driver`)
+- [x] Champs : nom, numéro de téléphone, plaque du véhicule (`app/driver/form/driver-form.tsx`)
+- [x] Validation (mêmes règles + format plaque — `lib/drivers.ts`, Zod)
+- [x] `POST /api/drivers` — créer/mettre à jour le `Driver` en base (upsert par téléphone)
+- [x] Sauvegarde dans un cookie (name, phone, licensePlate)
+- [x] Redirection vers le tableau de bord Conducteur (`/driver` — stub en attendant la tâche 7)
 
 ## 5. Page principale Client (`/customer`)
 

@@ -23,7 +23,7 @@ enum PaymentMethod {
 model Customer {
   id        String   @id @default(cuid())
   name      String
-  phone     String
+  phone     String   @unique
   createdAt DateTime @default(now())
 
   rides Ride[]
@@ -32,7 +32,7 @@ model Customer {
 model Driver {
   id            String   @id @default(cuid())
   name          String
-  phone         String
+  phone         String   @unique
   licensePlate  String
   available     Boolean  @default(false)
   createdAt     DateTime @default(now())
