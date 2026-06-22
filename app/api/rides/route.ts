@@ -10,6 +10,7 @@ import { getSession } from "@/lib/session";
 
 const createRideSchema = z.object({
   origin: z.object({ lat: z.number(), lng: z.number() }),
+  originLabel: z.string().trim().min(1).optional(),
   destination: z.string().trim().min(1),
   estimatedPrice: z.number().nonnegative(),
   distanceKm: z.number().nonnegative(),
@@ -57,6 +58,7 @@ export async function POST(request: Request) {
   const ride = await createRide({
     customerId: customer.id,
     origin: parsed.data.origin,
+    originLabel: parsed.data.originLabel,
     destination: parsed.data.destination,
     estimatedPrice: parsed.data.estimatedPrice,
     distanceKm: parsed.data.distanceKm,

@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPinIcon } from "lucide-react";
+import { LogOutIcon, MapPinIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { ActiveRidePanel, type ActiveRide } from "./active-ride-panel";
@@ -14,6 +14,7 @@ import {
   type Coordinates,
   type RideEstimate,
 } from "@/lib/geo";
+import { switchProfile } from "@/app/switch-profile";
 
 const BookingMap = dynamic(() => import("./booking-map"), {
   ssr: false,
@@ -86,6 +87,7 @@ export function CustomerBookingScreen() {
       if (data.status === "completed") {
         setActiveRide(null);
         setCompletedRide({
+          originLabel: data.originLabel,
           destination: data.destination,
           estimatedPrice: data.estimatedPrice,
           distanceKm: data.distanceKm,
@@ -147,6 +149,7 @@ export function CustomerBookingScreen() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         origin,
+        originLabel: originLabel ?? undefined,
         destination: destinationLabel ?? `${destination.lat},${destination.lng}`,
         estimatedPrice: estimate.estimatedPrice,
         distanceKm: estimate.distanceKm,
@@ -205,8 +208,18 @@ export function CustomerBookingScreen() {
         onSelectDestination={handleSelectDestination}
       />
 
+      <button
+        type="button"
+        onClick={() => switchProfile()}
+        aria-label="Changer de profil"
+        className="absolute right-4 z-10 flex size-11 items-center justify-center rounded-full bg-popover text-foreground shadow-[0_8px_24px_oklch(0.17_0.01_90_/_0.16)] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background sm:size-10"
+        style={{ top: "max(1rem, calc(env(safe-area-inset-top) + 0.5rem))" }}
+      >
+        <LogOutIcon aria-hidden="true" className="size-4.5 sm:size-4" />
+      </button>
+
       <div
-        className="absolute inset-x-0 z-10 flex flex-col items-center gap-2 px-4"
+        className="absolute inset-x-0 z-10 flex flex-col items-center gap-2 pl-4 pr-16"
         style={{ top: "max(1rem, calc(env(safe-area-inset-top) + 0.5rem))" }}
       >
         <div className="flex w-full max-w-md flex-col gap-2">

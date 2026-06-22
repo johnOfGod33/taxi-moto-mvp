@@ -21,6 +21,7 @@ export default async function DriverPage() {
       initialRides={rides.map((ride) => ({
         id: ride.id,
         status: ride.status,
+        originLabel: ride.originLabel,
         destination: ride.destination,
         estimatedPrice: ride.estimatedPrice,
         pickupEtaMinutes: ride.pickupEtaMinutes,

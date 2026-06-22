@@ -27,13 +27,18 @@ export async function GET(
   return NextResponse.json({
     id: ride.id,
     status: ride.status,
+    originLabel: ride.originLabel,
     destination: ride.destination,
     estimatedPrice: ride.estimatedPrice,
     distanceKm: ride.distanceKm,
     etaMinutes: ride.etaMinutes,
     paymentMethod: ride.paymentMethod,
     driver: ride.driver
-      ? { name: ride.driver.name, licensePlate: ride.driver.licensePlate }
+      ? {
+          name: ride.driver.name,
+          licensePlate: ride.driver.licensePlate,
+          phone: ride.driver.phone,
+        }
       : null,
   });
 }

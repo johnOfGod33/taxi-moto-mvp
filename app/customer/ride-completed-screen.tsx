@@ -2,6 +2,7 @@
 
 import { CheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RouteSummary } from "@/components/route-summary";
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cash: "Cash",
@@ -10,6 +11,7 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 };
 
 export type CompletedRide = {
+  originLabel: string | null;
   destination: string;
   estimatedPrice: number;
   distanceKm: number | null;
@@ -36,12 +38,9 @@ export function RideCompletedScreen({
       </div>
 
       <div className="flex w-full max-w-sm flex-col gap-3 rounded-lg border border-border p-5">
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-sm text-muted-foreground">Destination</span>
-          <span className="text-sm font-medium text-foreground">{ride.destination}</span>
-        </div>
+        <RouteSummary originLabel={ride.originLabel} destination={ride.destination} />
         {ride.distanceKm !== null && ride.etaMinutes !== null && (
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-4 border-t border-border pt-3">
             <span className="text-sm text-muted-foreground">Distance · durée</span>
             <span className="text-sm font-medium text-foreground">
               {ride.distanceKm.toFixed(1)} km · {ride.etaMinutes} min

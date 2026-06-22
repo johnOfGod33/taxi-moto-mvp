@@ -25,7 +25,11 @@ export async function GET() {
     destination: ride.destination,
     estimatedPrice: ride.estimatedPrice,
     driver: ride.driver
-      ? { name: ride.driver.name, licensePlate: ride.driver.licensePlate }
+      ? {
+          name: ride.driver.name,
+          licensePlate: ride.driver.licensePlate,
+          phone: ride.driver.phone,
+        }
       : null,
   });
 }

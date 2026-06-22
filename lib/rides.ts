@@ -31,6 +31,7 @@ export async function hasAvailableDriverNearby(origin: Coordinates) {
 export async function createRide(input: {
   customerId: string;
   origin: Coordinates;
+  originLabel?: string;
   destination: string;
   estimatedPrice: number;
   distanceKm: number;
@@ -41,6 +42,7 @@ export async function createRide(input: {
       customerId: input.customerId,
       originLat: input.origin.lat,
       originLng: input.origin.lng,
+      originLabel: input.originLabel,
       destination: input.destination,
       estimatedPrice: input.estimatedPrice,
       distanceKm: input.distanceKm,

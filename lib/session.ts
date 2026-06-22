@@ -43,3 +43,8 @@ export async function setSession(session: Session): Promise<void> {
     maxAge: 60 * 60 * 24 * 365,
   });
 }
+
+export async function clearSession(): Promise<void> {
+  const store = await cookies();
+  store.delete(SESSION_COOKIE);
+}

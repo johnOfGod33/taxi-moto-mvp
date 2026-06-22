@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ContactRow } from "@/components/contact-row";
 import { cn } from "@/lib/utils";
 
 type RideStatus =
@@ -17,7 +18,7 @@ export type ActiveRide = {
   status: RideStatus;
   destination: string;
   estimatedPrice: number;
-  driver: { name: string; licensePlate: string } | null;
+  driver: { name: string; licensePlate: string; phone: string } | null;
 };
 
 const STEPS = [
@@ -111,10 +112,11 @@ export function ActiveRidePanel({
       </span>
 
       {ride.driver && (
-        <div className="flex flex-col gap-1 rounded-lg bg-secondary p-4">
-          <span className="text-base font-medium text-foreground">{ride.driver.name}</span>
-          <span className="text-sm text-muted-foreground">{ride.driver.licensePlate}</span>
-        </div>
+        <ContactRow
+          name={ride.driver.name}
+          subtitle={ride.driver.licensePlate}
+          phone={ride.driver.phone}
+        />
       )}
 
       {ride.status !== "in_progress" && (

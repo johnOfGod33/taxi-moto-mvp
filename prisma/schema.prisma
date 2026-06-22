@@ -52,6 +52,7 @@ model Ride {
   driver            Driver?        @relation(fields: [driverId], references: [id])
   originLat         Float?
   originLng         Float?
+  originLabel       String?
   destination       String
   estimatedPrice    Float
   distanceKm        Float?

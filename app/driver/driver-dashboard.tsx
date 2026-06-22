@@ -2,6 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ContactRow } from "@/components/contact-row";
+import { RouteSummary } from "@/components/route-summary";
 import {
   Dialog,
   DialogClose,
@@ -18,6 +20,7 @@ import { Radio, RadioGroup } from "@/components/ui/radio-group";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Switch } from "@/components/ui/switch";
 import { Wordmark } from "@/components/wordmark";
+import { switchProfile } from "@/app/switch-profile";
 
 type RideStatus =
   | "pending"
@@ -31,6 +34,7 @@ type PaymentMethod = "cash" | "flooz" | "tmoney";
 type DriverRide = {
   id: string;
   status: RideStatus;
+  originLabel: string | null;
   destination: string;
   estimatedPrice: number;
   pickupEtaMinutes: number | null;
@@ -146,6 +150,14 @@ export function DriverDashboard({
             className="data-unchecked:bg-primary-foreground/35 data-checked:bg-primary-foreground"
           />
         </div>
+
+        <button
+          type="button"
+          onClick={() => switchProfile()}
+          className="mt-auto text-left text-sm font-medium text-primary-foreground/72 underline-offset-4 hover:underline"
+        >
+          Changer de profil
+        </button>
       </aside>
 
       <main
@@ -189,16 +201,19 @@ export function DriverDashboard({
               key={ride.id}
               className="flex flex-col gap-3 rounded-lg border border-border p-4"
             >
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-2">
                 <span className="text-base font-medium text-foreground">
                   {ride.customer.name}
                 </span>
-                <span className="text-sm text-muted-foreground">{ride.destination}</span>
-                {ride.pickupEtaMinutes !== null && (
-                  <span className="text-sm text-muted-foreground">
-                    ~{ride.pickupEtaMinutes} min jusqu&apos;au client
-                  </span>
-                )}
+                <RouteSummary
+                  originLabel={ride.originLabel}
+                  originHint={
+                    ride.pickupEtaMinutes !== null
+                      ? `~${ride.pickupEtaMinutes} min jusqu'au client`
+                      : undefined
+                  }
+                  destination={ride.destination}
+                />
                 <span className="text-base font-semibold text-foreground">
                   {ride.estimatedPrice} FCFA
                 </span>
@@ -246,13 +261,9 @@ function RideCard({
       <StatusPill variant="go" className="self-start">
         {ride.status === "in_progress" ? "Course en cours" : "Acceptée"}
       </StatusPill>
-      <div className="flex flex-col gap-1">
-        <span className="text-base font-medium text-foreground">{ride.customer.name}</span>
-        <span className="text-sm text-muted-foreground">{ride.destination}</span>
-        <span className="text-base font-semibold text-foreground">
-          {ride.estimatedPrice} FCFA
-        </span>
-      </div>
+      <ContactRow name={ride.customer.name} phone={ride.customer.phone} />
+      <RouteSummary originLabel={ride.originLabel} destination={ride.destination} />
+      <span className="text-base font-semibold text-foreground">{ride.estimatedPrice} FCFA</span>
       {ride.status === "accepted" ? (
         <Button className="w-full" loading={isStarting} onClick={onStart}>
           Démarrer la course
