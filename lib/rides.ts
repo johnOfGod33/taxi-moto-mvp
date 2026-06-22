@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { haversineDistanceKm, type Coordinates } from "@/lib/geo";
+import type { PaymentMethod } from "@/generated/prisma/enums";
 
 export async function findNearestAvailableDriver(origin: Coordinates) {
   const availableDrivers = await prisma.driver.findMany({
@@ -12,8 +13,8 @@ export async function findNearestAvailableDriver(origin: Coordinates) {
     (driver) => driver.lat !== null && driver.lng !== null,
   );
 
-  // Until drivers report a live position (task 7), fall back to the first
-  // available driver instead of failing the match.
+  // Drivers without a reported position yet (never toggled "disponible" with
+  // geolocation granted) fall back to first-available instead of failing the match.
   if (withLocation.length === 0) return availableDrivers[0];
 
   return withLocation.reduce((nearest, driver) => {
@@ -50,5 +51,39 @@ export async function getRideById(id: string) {
   return prisma.ride.findUnique({
     where: { id },
     include: { driver: true },
+  });
+}
+
+export type RideAction =
+  | { type: "accept" }
+  | { type: "decline" }
+  | { type: "complete"; paymentMethod: PaymentMethod };
+
+export class RideActionError extends Error {}
+
+export async function applyRideAction(
+  rideId: string,
+  driverId: string,
+  action: RideAction,
+) {
+  const ride = await prisma.ride.findUnique({ where: { id: rideId } });
+  if (!ride || ride.driverId !== driverId) return null;
+
+  if (action.type === "accept" || action.type === "decline") {
+    if (ride.status !== "pending") {
+      throw new RideActionError("La course n'est plus en attente.");
+    }
+    return prisma.ride.update({
+      where: { id: rideId },
+      data: { status: action.type === "accept" ? "accepted" : "declined" },
+    });
+  }
+
+  if (ride.status !== "accepted") {
+    throw new RideActionError("La course doit être acceptée avant d'être terminée.");
+  }
+  return prisma.ride.update({
+    where: { id: rideId },
+    data: { status: "completed", paymentMethod: action.paymentMethod },
   });
 }

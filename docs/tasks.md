@@ -53,13 +53,13 @@
 
 ## 7. Tableau de bord Conducteur (`/driver`)
 
-- [ ] Toggle statut disponible / indisponible
-- [ ] `PATCH /api/drivers/:id/availability` — appel API au toggle
-- [ ] Liste des demandes de course à proximité (en attente)
-- [ ] Action "Accepter" / "Refuser" sur chaque demande
-- [ ] `PATCH /api/rides/:id` — accepter / refuser une demande (status `accepted`/`declined`)
-- [ ] Écran fin de course : choix du mode de paiement (cash, Flooz, T-Money)
-- [ ] `PATCH /api/rides/:id` — terminer la course (status `completed` + `paymentMethod`)
+- [x] Toggle statut disponible / indisponible (capture la position via géolocalisation à l'activation)
+- [x] `PATCH /api/drivers/:id/availability` — appel API au toggle, vérifie que le conducteur n'agit que sur son propre profil
+- [x] Liste des demandes de course à proximité (en attente) — `GET /api/drivers/:id/rides`, rafraîchi par polling (5s)
+- [x] Action "Accepter" / "Refuser" sur chaque demande
+- [x] `PATCH /api/rides/:id` — accepter / refuser une demande (status `accepted`/`declined`)
+- [x] Écran fin de course : choix du mode de paiement (cash, Flooz, T-Money) — modal Coss Dialog + RadioGroup
+- [x] `PATCH /api/rides/:id` — terminer la course (status `completed` + `paymentMethod`)
 
 ## 8. Persistance côté client (cookies)
 

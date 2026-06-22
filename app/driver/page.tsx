@@ -1,16 +1,29 @@
 import { redirect } from "next/navigation";
+import { getDriverByPhone, getDriverRides } from "@/lib/drivers";
 import { getSession } from "@/lib/session";
+import { DriverDashboard } from "./driver-dashboard";
 
-// TODO(task 7 — docs/tasks.md): replace with the driver dashboard (availability toggle + ride requests).
 export default async function DriverPage() {
   const session = await getSession();
   if (session?.role !== "driver") redirect("/driver/form");
 
+  const driver = await getDriverByPhone(session.phone);
+  if (!driver) redirect("/driver/form");
+
+  const rides = await getDriverRides(driver.id);
+
   return (
-    <main className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-12 text-center">
-      <p className="text-base text-muted-foreground">
-        Bonjour {session.name} — le tableau de bord arrive (tâche 7).
-      </p>
-    </main>
+    <DriverDashboard
+      driverId={driver.id}
+      driverName={driver.name}
+      initialAvailable={driver.available}
+      initialRides={rides.map((ride) => ({
+        id: ride.id,
+        status: ride.status,
+        destination: ride.destination,
+        estimatedPrice: ride.estimatedPrice,
+        customer: { name: ride.customer.name, phone: ride.customer.phone },
+      }))}
+    />
   );
 }

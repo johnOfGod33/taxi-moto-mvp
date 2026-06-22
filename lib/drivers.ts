@@ -28,3 +28,29 @@ export async function upsertDriver(input: DriverInput) {
     update: { name: input.name, licensePlate: input.licensePlate },
   });
 }
+
+export async function getDriverByPhone(phone: string) {
+  return prisma.driver.findUnique({ where: { phone } });
+}
+
+export async function setDriverAvailability(
+  id: string,
+  available: boolean,
+  location?: { lat: number; lng: number },
+) {
+  return prisma.driver.update({
+    where: { id },
+    data: {
+      available,
+      ...(location && { lat: location.lat, lng: location.lng }),
+    },
+  });
+}
+
+export async function getDriverRides(driverId: string) {
+  return prisma.ride.findMany({
+    where: { driverId, status: { in: ["pending", "accepted"] } },
+    include: { customer: true },
+    orderBy: { createdAt: "asc" },
+  });
+}
