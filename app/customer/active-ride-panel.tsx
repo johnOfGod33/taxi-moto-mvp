@@ -4,7 +4,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type RideStatus = "pending" | "accepted" | "declined" | "cancelled" | "completed";
+type RideStatus =
+  | "pending"
+  | "accepted"
+  | "in_progress"
+  | "declined"
+  | "cancelled"
+  | "completed";
 
 export type ActiveRide = {
   id: string;
@@ -17,30 +23,42 @@ export type ActiveRide = {
 const STEPS = [
   { key: "pending", label: "Demande envoyée" },
   { key: "accepted", label: "Conducteur en route" },
+  { key: "in_progress", label: "Course en cours" },
 ] as const;
 
 function RideTimeline({ status }: { status: RideStatus }) {
-  const activeIndex = status === "pending" ? 0 : 1;
+  const foundIndex = STEPS.findIndex((step) => step.key === status);
+  const currentIndex = foundIndex === -1 ? 0 : foundIndex;
 
   return (
-    <ol aria-label="Suivi de la course" className="flex flex-col gap-3">
+    <ol aria-label="Suivi de la course" className="flex flex-col">
       {STEPS.map((step, index) => {
-        const reached = index <= activeIndex;
-        const isCurrent = index === activeIndex;
+        const isDone = index < currentIndex;
+        const isCurrent = index === currentIndex;
+        const reached = index <= currentIndex;
+        const isLast = index === STEPS.length - 1;
 
         return (
-          <li key={step.key} className="flex items-center gap-3">
-            <span
-              aria-hidden="true"
-              className={cn(
-                "size-2 shrink-0 rounded-full",
-                reached ? "bg-brand-accent" : "bg-border",
+          <li key={step.key} className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "z-10 mt-1 size-2.5 shrink-0 rounded-full",
+                  reached ? "bg-brand-accent" : "bg-border",
+                )}
+              />
+              {!isLast && (
+                <span
+                  aria-hidden="true"
+                  className={cn("w-px flex-1", isDone ? "bg-brand-accent" : "bg-border")}
+                />
               )}
-            />
+            </div>
             <span
               aria-current={isCurrent ? "step" : undefined}
               className={cn(
-                "text-sm",
+                "pb-3 text-sm",
                 reached ? "font-medium text-foreground" : "text-muted-foreground",
               )}
             >
@@ -87,7 +105,9 @@ export function ActiveRidePanel({
 
       <RideTimeline status={ride.status} />
       <span className="sr-only" aria-live="polite" role="status">
-        {ride.status === "pending" ? "Demande envoyée" : "Conducteur en route"}
+        {ride.status === "pending" && "Demande envoyée"}
+        {ride.status === "accepted" && "Conducteur en route"}
+        {ride.status === "in_progress" && "Course en cours"}
       </span>
 
       {ride.driver && (
@@ -97,14 +117,16 @@ export function ActiveRidePanel({
         </div>
       )}
 
-      <Button
-        variant="secondary"
-        className="w-full"
-        loading={isCancelling}
-        onClick={handleCancel}
-      >
-        Annuler la course
-      </Button>
+      {ride.status !== "in_progress" && (
+        <Button
+          variant="secondary"
+          className="w-full"
+          loading={isCancelling}
+          onClick={handleCancel}
+        >
+          Annuler la course
+        </Button>
+      )}
     </div>
   );
 }

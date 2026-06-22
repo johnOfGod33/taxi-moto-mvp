@@ -72,7 +72,12 @@ export function CustomerBookingScreen() {
 
   useEffect(() => {
     if (!activeRideId) return;
-    if (activeRideStatus !== "pending" && activeRideStatus !== "accepted") return;
+    if (
+      activeRideStatus !== "pending" &&
+      activeRideStatus !== "accepted" &&
+      activeRideStatus !== "in_progress"
+    )
+      return;
 
     const interval = setInterval(async () => {
       const response = await fetch(`/api/rides/${activeRideId}`);

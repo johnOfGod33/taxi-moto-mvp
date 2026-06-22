@@ -19,7 +19,13 @@ import { StatusPill } from "@/components/ui/status-pill";
 import { Switch } from "@/components/ui/switch";
 import { Wordmark } from "@/components/wordmark";
 
-type RideStatus = "pending" | "accepted" | "declined" | "cancelled" | "completed";
+type RideStatus =
+  | "pending"
+  | "accepted"
+  | "in_progress"
+  | "declined"
+  | "cancelled"
+  | "completed";
 type PaymentMethod = "cash" | "flooz" | "tmoney";
 
 type DriverRide = {
@@ -85,7 +91,7 @@ export function DriverDashboard({
     });
   }
 
-  async function handleRideAction(rideId: string, type: "accept" | "decline") {
+  async function handleRideAction(rideId: string, type: "accept" | "decline" | "start") {
     setPendingActionId(rideId);
     const response = await fetch(`/api/rides/${rideId}`, {
       method: "PATCH",
@@ -106,7 +112,9 @@ export function DriverDashboard({
   }
 
   const pendingRides = rides.filter((ride) => ride.status === "pending");
-  const acceptedRides = rides.filter((ride) => ride.status === "accepted");
+  const acceptedRides = rides.filter(
+    (ride) => ride.status === "accepted" || ride.status === "in_progress",
+  );
 
   return (
     <div className="flex flex-1 flex-col sm:flex-row">
@@ -135,6 +143,7 @@ export function DriverDashboard({
             id={switchId}
             checked={available}
             onCheckedChange={handleToggleAvailability}
+            className="data-unchecked:bg-primary-foreground/35 data-checked:bg-primary-foreground"
           />
         </div>
       </aside>
@@ -155,7 +164,13 @@ export function DriverDashboard({
               Course en cours
             </h2>
             {acceptedRides.map((ride) => (
-              <RideCard key={ride.id} ride={ride} onComplete={handleComplete} />
+              <RideCard
+                key={ride.id}
+                ride={ride}
+                isStarting={pendingActionId === ride.id}
+                onStart={() => handleRideAction(ride.id, "start")}
+                onComplete={handleComplete}
+              />
             ))}
           </section>
         )}
@@ -215,9 +230,13 @@ export function DriverDashboard({
 
 function RideCard({
   ride,
+  isStarting,
+  onStart,
   onComplete,
 }: {
   ride: DriverRide;
+  isStarting: boolean;
+  onStart: () => void;
   onComplete: (rideId: string, paymentMethod: PaymentMethod) => Promise<void>;
 }) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
@@ -225,7 +244,7 @@ function RideCard({
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
       <StatusPill variant="go" className="self-start">
-        Acceptée
+        {ride.status === "in_progress" ? "Course en cours" : "Acceptée"}
       </StatusPill>
       <div className="flex flex-col gap-1">
         <span className="text-base font-medium text-foreground">{ride.customer.name}</span>
@@ -234,42 +253,48 @@ function RideCard({
           {ride.estimatedPrice} FCFA
         </span>
       </div>
-      <Dialog>
-        <DialogTrigger render={<Button className="w-full" />}>
-          Terminer la course
-        </DialogTrigger>
-        <DialogPopup>
-          <DialogHeader>
-            <DialogTitle>Terminer la course</DialogTitle>
-            <DialogDescription>Choisissez le mode de paiement.</DialogDescription>
-          </DialogHeader>
-          <DialogPanel>
-            <RadioGroup
-              value={paymentMethod}
-              onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
-            >
-              <Label className="flex items-center gap-3 py-2.5">
-                <Radio value="cash" /> Cash
-              </Label>
-              <Label className="flex items-center gap-3 py-2.5">
-                <Radio value="flooz" /> Flooz
-              </Label>
-              <Label className="flex items-center gap-3 py-2.5">
-                <Radio value="tmoney" /> T-Money
-              </Label>
-            </RadioGroup>
-          </DialogPanel>
-          <DialogFooter>
-            <DialogClose render={<Button variant="ghost" />}>Annuler</DialogClose>
-            <DialogClose
-              render={<Button />}
-              onClick={() => onComplete(ride.id, paymentMethod)}
-            >
-              Confirmer le paiement
-            </DialogClose>
-          </DialogFooter>
-        </DialogPopup>
-      </Dialog>
+      {ride.status === "accepted" ? (
+        <Button className="w-full" loading={isStarting} onClick={onStart}>
+          Démarrer la course
+        </Button>
+      ) : (
+        <Dialog>
+          <DialogTrigger render={<Button className="w-full" />}>
+            Terminer la course
+          </DialogTrigger>
+          <DialogPopup>
+            <DialogHeader>
+              <DialogTitle>Terminer la course</DialogTitle>
+              <DialogDescription>Choisissez le mode de paiement.</DialogDescription>
+            </DialogHeader>
+            <DialogPanel>
+              <RadioGroup
+                value={paymentMethod}
+                onValueChange={(value) => setPaymentMethod(value as PaymentMethod)}
+              >
+                <Label className="flex items-center gap-3 py-2.5">
+                  <Radio value="cash" /> Cash
+                </Label>
+                <Label className="flex items-center gap-3 py-2.5">
+                  <Radio value="flooz" /> Flooz
+                </Label>
+                <Label className="flex items-center gap-3 py-2.5">
+                  <Radio value="tmoney" /> T-Money
+                </Label>
+              </RadioGroup>
+            </DialogPanel>
+            <DialogFooter>
+              <DialogClose render={<Button variant="ghost" />}>Annuler</DialogClose>
+              <DialogClose
+                render={<Button />}
+                onClick={() => onComplete(ride.id, paymentMethod)}
+              >
+                Confirmer le paiement
+              </DialogClose>
+            </DialogFooter>
+          </DialogPopup>
+        </Dialog>
+      )}
     </div>
   );
 }

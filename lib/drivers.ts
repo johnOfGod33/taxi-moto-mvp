@@ -54,19 +54,21 @@ export async function getDriverRides(driverId: string) {
 
   const [ownAcceptedRides, pendingRides] = await Promise.all([
     prisma.ride.findMany({
-      where: { driverId, status: "accepted" },
+      where: { driverId, status: { in: ["accepted", "in_progress"] } },
       include: { customer: true },
       orderBy: { createdAt: "asc" },
     }),
-    prisma.ride.findMany({
-      where: {
-        status: "pending",
-        driverId: null,
-        NOT: { declinedDriverIds: { has: driverId } },
-      },
-      include: { customer: true },
-      orderBy: { createdAt: "asc" },
-    }),
+    driver.available
+      ? prisma.ride.findMany({
+          where: {
+            status: "pending",
+            driverId: null,
+            NOT: { declinedDriverIds: { has: driverId } },
+          },
+          include: { customer: true },
+          orderBy: { createdAt: "asc" },
+        })
+      : Promise.resolve([]),
   ]);
 
   // Broadcast pending requests, filtered to this driver's vicinity — unless

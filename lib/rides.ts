@@ -59,7 +59,7 @@ export async function getRideById(id: string) {
 
 export async function getActiveRideForCustomer(customerId: string) {
   return prisma.ride.findFirst({
-    where: { customerId, status: { in: ["pending", "accepted"] } },
+    where: { customerId, status: { in: ["pending", "accepted", "in_progress"] } },
     include: { driver: true },
     orderBy: { createdAt: "desc" },
   });
@@ -68,6 +68,7 @@ export async function getActiveRideForCustomer(customerId: string) {
 export type DriverRideAction =
   | { type: "accept" }
   | { type: "decline" }
+  | { type: "start" }
   | { type: "complete"; paymentMethod: PaymentMethod };
 
 export class RideActionError extends Error {}
@@ -104,10 +105,22 @@ export async function applyDriverRideAction(
     });
   }
 
+  if (action.type === "start") {
+    const ride = await prisma.ride.findUnique({ where: { id: rideId } });
+    if (!ride || ride.driverId !== driverId) return null;
+    if (ride.status !== "accepted") {
+      throw new RideActionError("La course doit être acceptée avant de démarrer.");
+    }
+    return prisma.ride.update({
+      where: { id: rideId },
+      data: { status: "in_progress" },
+    });
+  }
+
   const ride = await prisma.ride.findUnique({ where: { id: rideId } });
   if (!ride || ride.driverId !== driverId) return null;
-  if (ride.status !== "accepted") {
-    throw new RideActionError("La course doit être acceptée avant d'être terminée.");
+  if (ride.status !== "in_progress") {
+    throw new RideActionError("La course doit être démarrée avant d'être terminée.");
   }
   return prisma.ride.update({
     where: { id: rideId },

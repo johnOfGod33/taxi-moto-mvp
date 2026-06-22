@@ -11,14 +11,16 @@ export default async function CustomerFormPage() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-12">
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
-        <div className="flex w-full flex-col items-center gap-2 text-center">
-          <Wordmark />
-          <h1 className="text-balance text-2xl font-semibold tracking-[-0.02em] text-foreground sm:text-3xl">
-            Quelques infos avant de réserver
-          </h1>
-          <p className="text-pretty text-base text-muted-foreground">
-            Pas de compte à créer — on s&apos;en souviendra pour la prochaine fois.
-          </p>
+        <div className="flex w-full flex-col items-center gap-4 text-center">
+          <Wordmark className="text-3xl sm:text-4xl" />
+          <div className="flex flex-col items-center gap-2">
+            <h1 className="text-balance text-2xl font-semibold tracking-[-0.02em] text-foreground sm:text-3xl">
+              Quelques infos avant de réserver
+            </h1>
+            <p className="text-pretty text-base text-muted-foreground">
+              Aucun compte à créer. On garde vos infos pour votre prochaine course.
+            </p>
+          </div>
         </div>
 
         <CustomerForm />

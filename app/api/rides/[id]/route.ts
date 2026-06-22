@@ -41,6 +41,7 @@ export async function GET(
 const driverActionSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("accept") }),
   z.object({ type: z.literal("decline") }),
+  z.object({ type: z.literal("start") }),
   z.object({
     type: z.literal("complete"),
     paymentMethod: z.enum(["cash", "flooz", "tmoney"]),
