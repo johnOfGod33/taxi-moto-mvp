@@ -35,6 +35,8 @@ model Driver {
   phone         String   @unique
   licensePlate  String
   available     Boolean  @default(false)
+  lat           Float?
+  lng           Float?
   createdAt     DateTime @default(now())
 
   rides Ride[]

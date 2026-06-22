@@ -34,22 +34,22 @@
 
 ## 5. Page principale Client (`/customer`)
 
-- [ ] Carte interactive (Leaflet + OpenStreetMap)
-- [ ] Géolocalisation du navigateur (`navigator.geolocation`) → position actuelle sur la carte
-- [ ] Saisie de la destination (recherche d'adresse ou sélection sur la carte)
-- [ ] Fonction de calcul de distance (Haversine) + formule prix (tarif de base + tarif/km) et temps (distance / vitesse moyenne)
-- [ ] `POST /api/rides/estimate` — appel API au changement de destination pour récupérer prix + temps
-- [ ] Affichage du prix estimé et du temps d'arrivée
-- [ ] Bouton "Confirmer la course" → ouvre la modal de confirmation
+- [x] Carte interactive (Leaflet + tuiles CARTO Positron, rendu épuré — `app/customer/booking-map.tsx`)
+- [x] Géolocalisation du navigateur (`navigator.geolocation`) → position actuelle sur la carte (repli sur Lomé si refusée)
+- [x] Saisie de la destination : barre de recherche Nominatim style Google Maps (`destination-search.tsx`, Coss Combobox) **et** tap sur la carte ; reverse geocoding pour le nom lisible quand on tape directement sur la carte
+- [x] Fonction de calcul de distance (Haversine) + formule prix (tarif de base + tarif/km) et temps (distance / vitesse moyenne) — `lib/geo.ts`
+- [x] `POST /api/rides/estimate` — appel API au changement de destination pour récupérer prix + temps
+- [x] Affichage du prix estimé et du temps d'arrivée
+- [x] Bouton "Confirmer la course" → ouvre la modal de confirmation (Coss Dialog ; logique de confirmation réelle = tâche 6)
 
 ## 6. Modal de confirmation (Client)
 
-- [ ] Affichage par-dessus la carte : prix estimé, conducteur assigné (nom, plaque)
-- [ ] État "recherche d'un conducteur" pendant le matching
-- [ ] Bouton confirmer / annuler
-- [ ] `POST /api/rides` — à la confirmation, créer le `Ride` (status `pending`) ; sélection du `Driver` disponible le plus proche
-- [ ] `GET /api/rides/:id` — polling du statut pendant l'attente d'acceptation
-- [ ] Affichage du profil du conducteur assigné une fois la course acceptée
+- [x] Affichage par-dessus la carte : prix estimé, conducteur assigné (nom, plaque) — `app/customer/confirm-ride-dialog.tsx`
+- [x] État "recherche d'un conducteur" pendant le matching
+- [x] Bouton confirmer / annuler
+- [x] `POST /api/rides` — à la confirmation, créer le `Ride` (status `pending`) ; sélection du `Driver` disponible le plus proche (Haversine si position connue, sinon premier disponible — voir `Driver.lat`/`lng`, à remplir par la tâche 7)
+- [x] `GET /api/rides/:id` — polling du statut pendant l'attente d'acceptation (toutes les 3s)
+- [x] Affichage du profil du conducteur assigné une fois la course acceptée
 
 ## 7. Tableau de bord Conducteur (`/driver`)
 
