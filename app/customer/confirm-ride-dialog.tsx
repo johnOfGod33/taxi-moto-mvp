@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRightIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,7 +52,8 @@ export function ConfirmRideDialog({
       }}
     >
       <DialogTrigger render={<Button size="lg" className="w-full" />}>
-        Confirmer la course
+        Commander pour {estimate.estimatedPrice} FCFA
+        <ArrowRightIcon aria-hidden="true" />
       </DialogTrigger>
       <DialogPopup>
         <DialogHeader>

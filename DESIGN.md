@@ -1,5 +1,5 @@
 ---
-name: Taxi-Moto MVP
+name: OLEYIA
 description: Réservation rapide de taxi-moto au Togo — sans compte, sans friction.
 colors:
   primary: "oklch(0.80 0.17 95)"
@@ -63,7 +63,7 @@ components:
     padding: "4px 12px"
 ---
 
-# Design System: Taxi-Moto MVP
+# Design System: OLEYIA
 
 ## 1. Overview
 
@@ -119,6 +119,9 @@ This system explicitly rejects the generic SaaS cream/beige look and fintech-das
 ### Named Rules
 **The No-Eyebrow Rule.** Labels are for controls and status, not decorative section kickers. No small-caps tracked text floating above a heading "for polish."
 
+### Wordmark
+Text only — "OLEYIA," Display weight (600), no mark/icon/graphic alongside it (no illustration budget, no extra bytes). Ink on Pure Ground; `primary-foreground` when set on a Sun Dispatch Yellow surface (the driver sidebar/topbar), never white at that lightness. Appears on the role-selection home, the two onboarding forms, and the driver sidebar/topbar — never on the live booking map, which stays clear of anything but the task at hand.
+
 ## 4. Elevation
 
 Flat by default. Depth is conveyed through the Ground → Surface step (a 3.5% lightness drop, no shadow) and through borders, not through drop shadows. The one exception is the confirmation modal/bottom sheet, which needs to visually separate from the map behind it.
@@ -155,6 +158,7 @@ Buttons and pills feel tactile and immediate: large, pill-shaped, no ambiguity a
 
 ### Navigation
 - No persistent nav bar — each role has one linear flow (home → form → main screen), so wayfinding is a back action, not a nav system. The role-selection screen is the only "choice" surface in the app.
+- **Exception — driver identity panel.** The driver's main screen carries a Sun Dispatch Yellow panel (full-width topbar under 640px, a fixed left sidebar at `sm:` and up) holding the wordmark, driver name/plate, and the availability StatusPill/Switch. It is identity and status, not navigation — it contains zero links, zero metrics, and never grows multi-item like a real nav. The yellow here is the same "primary action" signal extended deliberately to the driver's whole identity surface, not a new color.
 
 ## 6. Do's and Don'ts
 

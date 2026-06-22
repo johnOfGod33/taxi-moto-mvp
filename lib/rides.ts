@@ -33,6 +33,8 @@ export async function createRide(input: {
   origin: Coordinates;
   destination: string;
   estimatedPrice: number;
+  distanceKm: number;
+  etaMinutes: number;
 }) {
   return prisma.ride.create({
     data: {
@@ -41,6 +43,8 @@ export async function createRide(input: {
       originLng: input.origin.lng,
       destination: input.destination,
       estimatedPrice: input.estimatedPrice,
+      distanceKm: input.distanceKm,
+      etaMinutes: input.etaMinutes,
     },
     include: { driver: true },
   });

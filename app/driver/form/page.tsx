@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Wordmark } from "@/components/wordmark";
 import { getSession } from "@/lib/session";
 import { DriverForm } from "./driver-form";
 
@@ -10,7 +11,8 @@ export default async function DriverFormPage() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-12">
       <div className="flex w-full max-w-sm flex-col items-center gap-8">
-        <div className="flex w-full flex-col gap-2 text-center">
+        <div className="flex w-full flex-col items-center gap-2 text-center">
+          <Wordmark />
           <h1 className="text-balance text-2xl font-semibold tracking-[-0.02em] text-foreground sm:text-3xl">
             Quelques infos avant de démarrer
           </h1>

@@ -26,6 +26,7 @@ export async function GET(
       status: ride.status,
       destination: ride.destination,
       estimatedPrice: ride.estimatedPrice,
+      pickupEtaMinutes: ride.pickupEtaMinutes,
       customer: { name: ride.customer.name, phone: ride.customer.phone },
     })),
   );

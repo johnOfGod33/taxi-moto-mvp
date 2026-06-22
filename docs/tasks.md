@@ -63,8 +63,8 @@
 
 ## 8. Persistance côté client (cookies)
 
-- [ ] Helper `lib/cookies.ts` pour lire/écrire les infos de session (role, name, phone, licensePlate)
-- [ ] Lecture du cookie au chargement de la page d'accueil pour bypasser le formulaire
+- [x] Helper pour lire/écrire les infos de session (role, name, phone, licensePlate) — `lib/session.ts` (`getSession`/`setSession`)
+- [x] Lecture du cookie au chargement de la page d'accueil pour bypasser le formulaire — `app/page.tsx`
 
 ## 9. Hors périmètre (rappel, ne pas implémenter)
 

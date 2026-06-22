@@ -14,10 +14,18 @@ import { searchAddress, type AddressResult } from "@/lib/geo";
 
 export function DestinationSearch({
   onSelect,
+  placeholder = "Où allez-vous ?",
+  ariaLabel = "Rechercher une destination",
+  initialQuery,
+  autoFocus = false,
 }: {
   onSelect: (result: AddressResult) => void;
+  placeholder?: string;
+  ariaLabel?: string;
+  initialQuery?: string;
+  autoFocus?: boolean;
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery ?? "");
   const [results, setResults] = useState<AddressResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
@@ -56,9 +64,10 @@ export function DestinationSearch({
       }}
     >
       <ComboboxInput
-        aria-label="Rechercher une destination"
-        placeholder="Où allez-vous ?"
+        aria-label={ariaLabel}
+        placeholder={placeholder}
         showClear
+        autoFocus={autoFocus}
         startAddon={<SearchIcon aria-hidden="true" />}
         size="lg"
         className="rounded-full bg-popover shadow-[0_8px_24px_oklch(0.17_0.01_90_/_0.16)]"

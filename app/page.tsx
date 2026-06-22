@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Wordmark } from "@/components/wordmark";
 import { getSession } from "@/lib/session";
 
 export default async function Home() {
@@ -12,9 +13,10 @@ export default async function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-12">
       <div className="flex w-full max-w-sm flex-col items-center gap-10 text-center">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col items-center gap-3">
+          <Wordmark />
           <h1 className="text-balance text-3xl font-semibold tracking-[-0.02em] text-foreground sm:text-4xl">
-            Taxi-moto, en quelques secondes.
+            Votre taxi-moto en quelques secondes.
           </h1>
           <p className="text-pretty text-base text-muted-foreground">
             Choisissez votre profil pour continuer. Pas de compte, pas d&apos;attente.

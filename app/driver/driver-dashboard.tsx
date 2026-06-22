@@ -15,7 +15,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Radio, RadioGroup } from "@/components/ui/radio-group";
+import { StatusPill } from "@/components/ui/status-pill";
 import { Switch } from "@/components/ui/switch";
+import { Wordmark } from "@/components/wordmark";
 
 type RideStatus = "pending" | "accepted" | "declined" | "cancelled" | "completed";
 type PaymentMethod = "cash" | "flooz" | "tmoney";
@@ -25,6 +27,7 @@ type DriverRide = {
   status: RideStatus;
   destination: string;
   estimatedPrice: number;
+  pickupEtaMinutes: number | null;
   customer: { name: string; phone: string };
 };
 
@@ -33,11 +36,13 @@ const POLL_INTERVAL_MS = 5000;
 export function DriverDashboard({
   driverId,
   driverName,
+  licensePlate,
   initialAvailable,
   initialRides,
 }: {
   driverId: string;
   driverName: string;
+  licensePlate: string;
   initialAvailable: boolean;
   initialRides: DriverRide[];
 }) {
@@ -104,76 +109,107 @@ export function DriverDashboard({
   const acceptedRides = rides.filter((ride) => ride.status === "accepted");
 
   return (
-    <main className="flex flex-1 flex-col gap-6 bg-background px-6 py-8">
-      <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-1 flex-col sm:flex-row">
+      <aside
+        className="flex flex-col gap-5 bg-primary px-6 py-6 sm:w-64 sm:shrink-0 sm:py-8"
+        style={{
+          paddingTop: "max(1.5rem, calc(env(safe-area-inset-top) + 1rem))",
+        }}
+      >
+        <Wordmark className="text-primary-foreground" />
+
         <div className="flex flex-col gap-1">
-          <span className="text-xl font-semibold tracking-[-0.02em] text-foreground">
+          <span className="text-lg font-semibold tracking-[-0.02em] text-primary-foreground">
             {driverName}
           </span>
-          <Label htmlFor={switchId} className="text-sm text-muted-foreground">
-            {available ? "Disponible" : "Indisponible"}
-          </Label>
+          <span className="text-sm text-primary-foreground/72">{licensePlate}</span>
         </div>
-        <Switch
-          id={switchId}
-          checked={available}
-          onCheckedChange={handleToggleAvailability}
-        />
-      </div>
 
-      {acceptedRides.length > 0 && (
+        <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-start sm:gap-3">
+          <Label htmlFor={switchId}>
+            <StatusPill variant={available ? "go" : "neutral"}>
+              {available ? "Disponible" : "Indisponible"}
+            </StatusPill>
+          </Label>
+          <Switch
+            id={switchId}
+            checked={available}
+            onCheckedChange={handleToggleAvailability}
+          />
+        </div>
+      </aside>
+
+      <main
+        className="flex flex-1 flex-col gap-6 bg-background px-6 py-6"
+        style={{
+          paddingBottom: "max(2rem, calc(env(safe-area-inset-bottom) + 1rem))",
+        }}
+      >
+        <span className="text-xl font-semibold tracking-[-0.02em] text-foreground">
+          Bonjour {driverName.split(" ")[0]}
+        </span>
+
+        {acceptedRides.length > 0 && (
+          <section className="flex flex-col gap-3">
+            <h2 className="text-xl font-semibold tracking-[-0.02em] text-foreground">
+              Course en cours
+            </h2>
+            {acceptedRides.map((ride) => (
+              <RideCard key={ride.id} ride={ride} onComplete={handleComplete} />
+            ))}
+          </section>
+        )}
+
         <section className="flex flex-col gap-3">
-          <h2 className="text-sm font-medium text-muted-foreground">Course en cours</h2>
-          {acceptedRides.map((ride) => (
-            <RideCard key={ride.id} ride={ride} onComplete={handleComplete} />
+          <h2 className="text-xl font-semibold tracking-[-0.02em] text-foreground">
+            Demandes à proximité
+          </h2>
+          {pendingRides.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              Aucune demande pour le moment.
+            </p>
+          )}
+          {pendingRides.map((ride) => (
+            <div
+              key={ride.id}
+              className="flex flex-col gap-3 rounded-lg border border-border p-4"
+            >
+              <div className="flex flex-col gap-1">
+                <span className="text-base font-medium text-foreground">
+                  {ride.customer.name}
+                </span>
+                <span className="text-sm text-muted-foreground">{ride.destination}</span>
+                {ride.pickupEtaMinutes !== null && (
+                  <span className="text-sm text-muted-foreground">
+                    ~{ride.pickupEtaMinutes} min jusqu&apos;au client
+                  </span>
+                )}
+                <span className="text-base font-semibold text-foreground">
+                  {ride.estimatedPrice} FCFA
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="destructive"
+                  className="flex-1"
+                  disabled={pendingActionId === ride.id}
+                  onClick={() => handleRideAction(ride.id, "decline")}
+                >
+                  Refuser
+                </Button>
+                <Button
+                  className="flex-1"
+                  disabled={pendingActionId === ride.id}
+                  onClick={() => handleRideAction(ride.id, "accept")}
+                >
+                  Accepter
+                </Button>
+              </div>
+            </div>
           ))}
         </section>
-      )}
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Demandes à proximité
-        </h2>
-        {pendingRides.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Aucune demande pour le moment.
-          </p>
-        )}
-        {pendingRides.map((ride) => (
-          <div
-            key={ride.id}
-            className="flex flex-col gap-3 rounded-lg border border-border p-4"
-          >
-            <div className="flex flex-col gap-1">
-              <span className="text-base font-medium text-foreground">
-                {ride.customer.name}
-              </span>
-              <span className="text-sm text-muted-foreground">{ride.destination}</span>
-              <span className="text-base font-semibold text-foreground">
-                {ride.estimatedPrice} FCFA
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                className="flex-1"
-                disabled={pendingActionId === ride.id}
-                onClick={() => handleRideAction(ride.id, "decline")}
-              >
-                Refuser
-              </Button>
-              <Button
-                className="flex-1"
-                disabled={pendingActionId === ride.id}
-                onClick={() => handleRideAction(ride.id, "accept")}
-              >
-                Accepter
-              </Button>
-            </div>
-          </div>
-        ))}
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }
 
@@ -188,6 +224,9 @@ function RideCard({
 
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
+      <StatusPill variant="go" className="self-start">
+        Acceptée
+      </StatusPill>
       <div className="flex flex-col gap-1">
         <span className="text-base font-medium text-foreground">{ride.customer.name}</span>
         <span className="text-sm text-muted-foreground">{ride.destination}</span>

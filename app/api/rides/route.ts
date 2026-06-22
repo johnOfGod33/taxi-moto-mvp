@@ -12,6 +12,8 @@ const createRideSchema = z.object({
   origin: z.object({ lat: z.number(), lng: z.number() }),
   destination: z.string().trim().min(1),
   estimatedPrice: z.number().nonnegative(),
+  distanceKm: z.number().nonnegative(),
+  etaMinutes: z.number().nonnegative(),
 });
 
 export async function POST(request: Request) {
@@ -57,6 +59,8 @@ export async function POST(request: Request) {
     origin: parsed.data.origin,
     destination: parsed.data.destination,
     estimatedPrice: parsed.data.estimatedPrice,
+    distanceKm: parsed.data.distanceKm,
+    etaMinutes: parsed.data.etaMinutes,
   });
 
   return NextResponse.json(

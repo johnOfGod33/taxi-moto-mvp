@@ -1,10 +1,12 @@
 "use client";
 
+import { MapPinIcon } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { ActiveRidePanel, type ActiveRide } from "./active-ride-panel";
 import { ConfirmRideDialog, type ConfirmResult } from "./confirm-ride-dialog";
 import { DestinationSearch } from "./destination-search";
+import { RideCompletedScreen, type CompletedRide } from "./ride-completed-screen";
 import {
   DEFAULT_CENTER,
   reverseGeocode,
@@ -22,28 +24,36 @@ const POLL_INTERVAL_MS = 3000;
 
 export function CustomerBookingScreen() {
   const [origin, setOrigin] = useState<Coordinates>(DEFAULT_CENTER);
+  const [originLabel, setOriginLabel] = useState<string | null>(null);
+  const [isEditingOrigin, setIsEditingOrigin] = useState(false);
   const [usingFallbackCenter, setUsingFallbackCenter] = useState(false);
   const [destination, setDestination] = useState<Coordinates | null>(null);
   const [destinationLabel, setDestinationLabel] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<RideEstimate | null>(null);
   const [isEstimating, setIsEstimating] = useState(false);
   const [activeRide, setActiveRide] = useState<ActiveRide | null>(null);
+  const [completedRide, setCompletedRide] = useState<CompletedRide | null>(null);
 
   useEffect(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      const timeout = setTimeout(() => setUsingFallbackCenter(true));
+      const timeout = setTimeout(() => {
+        setUsingFallbackCenter(true);
+        setOriginLabel("Lomé (position approximative)");
+      });
       return () => clearTimeout(timeout);
     }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setOrigin({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
+        const point = { lat: position.coords.latitude, lng: position.coords.longitude };
+        setOrigin(point);
+        reverseGeocode(point).then((label) => {
+          setOriginLabel((current) => (current === null ? label ?? "Position actuelle" : current));
         });
       },
       () => {
         setUsingFallbackCenter(true);
+        setOriginLabel("Lomé (position approximative)");
       },
       { enableHighAccuracy: true, timeout: 8000 },
     );
@@ -68,7 +78,18 @@ export function CustomerBookingScreen() {
       const response = await fetch(`/api/rides/${activeRideId}`);
       if (!response.ok) return;
       const data = await response.json();
-      if (data.status === "completed" || data.status === "cancelled") {
+      if (data.status === "completed") {
+        setActiveRide(null);
+        setCompletedRide({
+          destination: data.destination,
+          estimatedPrice: data.estimatedPrice,
+          distanceKm: data.distanceKm,
+          etaMinutes: data.etaMinutes,
+          paymentMethod: data.paymentMethod,
+        });
+        return;
+      }
+      if (data.status === "cancelled") {
         setActiveRide(null);
         setDestination(null);
         setDestinationLabel(null);
@@ -107,6 +128,12 @@ export function CustomerBookingScreen() {
     handleSelectDestination(result.point, result.label);
   }
 
+  function handleSelectOrigin(result: AddressResult) {
+    setOrigin(result.point);
+    setOriginLabel(result.label);
+    setIsEditingOrigin(false);
+  }
+
   async function handleConfirmRide(): Promise<ConfirmResult> {
     if (!destination || !estimate) return { ok: false, reason: "error" };
 
@@ -117,6 +144,8 @@ export function CustomerBookingScreen() {
         origin,
         destination: destinationLabel ?? `${destination.lat},${destination.lng}`,
         estimatedPrice: estimate.estimatedPrice,
+        distanceKm: estimate.distanceKm,
+        etaMinutes: estimate.etaMinutes,
       }),
     });
 
@@ -152,6 +181,17 @@ export function CustomerBookingScreen() {
     setEstimate(null);
   }
 
+  function handleNewRide() {
+    setCompletedRide(null);
+    setDestination(null);
+    setDestinationLabel(null);
+    setEstimate(null);
+  }
+
+  if (completedRide) {
+    return <RideCompletedScreen ride={completedRide} onNewRide={handleNewRide} />;
+  }
+
   return (
     <main className="relative flex flex-1 flex-col">
       <BookingMap
@@ -164,7 +204,26 @@ export function CustomerBookingScreen() {
         className="absolute inset-x-0 z-10 flex flex-col items-center gap-2 px-4"
         style={{ top: "max(1rem, calc(env(safe-area-inset-top) + 0.5rem))" }}
       >
-        <div className="w-full max-w-md">
+        <div className="flex w-full max-w-md flex-col gap-2">
+          {isEditingOrigin ? (
+            <DestinationSearch
+              key="origin-edit"
+              onSelect={handleSelectOrigin}
+              placeholder="Départ"
+              ariaLabel="Modifier le point de départ"
+              initialQuery={originLabel ?? ""}
+              autoFocus
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsEditingOrigin(true)}
+              className="flex h-12 w-full cursor-pointer items-center gap-2 rounded-full bg-popover px-4 text-left text-sm text-foreground shadow-[0_8px_24px_oklch(0.17_0.01_90_/_0.16)] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background sm:h-11"
+            >
+              <MapPinIcon aria-hidden="true" className="size-4.5 shrink-0 opacity-80" />
+              <span className="truncate">{originLabel ?? "Localisation en cours…"}</span>
+            </button>
+          )}
           <DestinationSearch onSelect={handleSearchSelect} />
         </div>
         {usingFallbackCenter && (

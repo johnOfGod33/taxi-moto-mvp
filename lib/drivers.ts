@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { normalizeTogoPhone } from "@/lib/customers";
-import { haversineDistanceKm, MATCH_RADIUS_KM } from "@/lib/geo";
+import { AVERAGE_SPEED_KMH, haversineDistanceKm, MATCH_RADIUS_KM } from "@/lib/geo";
 
 export const driverSchema = z.object({
   name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères."),
@@ -84,5 +84,21 @@ export async function getDriverRides(driverId: string) {
           );
         });
 
-  return [...nearbyPendingRides, ...ownAcceptedRides];
+  const driverLat = driver.lat;
+  const driverLng = driver.lng;
+
+  function pickupEtaMinutes(ride: { originLat: number | null; originLng: number | null }) {
+    if (driverLat === null || driverLng === null) return null;
+    if (ride.originLat === null || ride.originLng === null) return null;
+    const distanceKm = haversineDistanceKm(
+      { lat: driverLat, lng: driverLng },
+      { lat: ride.originLat, lng: ride.originLng },
+    );
+    return Math.max(1, Math.round((distanceKm / AVERAGE_SPEED_KMH) * 60));
+  }
+
+  return [...nearbyPendingRides, ...ownAcceptedRides].map((ride) => ({
+    ...ride,
+    pickupEtaMinutes: pickupEtaMinutes(ride),
+  }));
 }

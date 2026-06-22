@@ -16,12 +16,14 @@ export default async function DriverPage() {
     <DriverDashboard
       driverId={driver.id}
       driverName={driver.name}
+      licensePlate={driver.licensePlate}
       initialAvailable={driver.available}
       initialRides={rides.map((ride) => ({
         id: ride.id,
         status: ride.status,
         destination: ride.destination,
         estimatedPrice: ride.estimatedPrice,
+        pickupEtaMinutes: ride.pickupEtaMinutes,
         customer: { name: ride.customer.name, phone: ride.customer.phone },
       }))}
     />

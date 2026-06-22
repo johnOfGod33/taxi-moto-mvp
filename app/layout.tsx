@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Taxi-Moto",
+  title: "OLEYIA",
   description: "Réservez un taxi-moto en quelques secondes.",
 };
 

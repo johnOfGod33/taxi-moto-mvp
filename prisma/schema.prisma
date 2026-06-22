@@ -53,6 +53,8 @@ model Ride {
   originLng         Float?
   destination       String
   estimatedPrice    Float
+  distanceKm        Float?
+  etaMinutes        Int?
   status            RideStatus     @default(pending)
   paymentMethod     PaymentMethod?
   declinedDriverIds String[]       @default([])
